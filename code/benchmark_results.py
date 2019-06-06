@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
-import statsmodels as sm
+import statsmodels.api as sm
 import patsy
-import statsmodels.discrete.discrete_model as smp
 from probit import probit_score_obs, probit_hessian
 from logit import logit_score_obs, logit_hessian
 from standard_errors import cov_hessian, cov_jacobian, cov_sandwich
@@ -48,8 +47,8 @@ nobs = len(x)
 # ------------------------------------------------
 
 y, x, params_sr = binary_processing(formula, spector_data)
-probit_mod = smp.Probit(endog=y, exog=x)
-logit_mod = smp.Logit(endog=y, exog=x)
+probit_mod = sm.Probit(endog=y, exog=x)
+logit_mod = sm.Logit(endog=y, exog=x)
 
 # fit probit and logit models
 probit_res = probit_mod.fit()
