@@ -60,7 +60,6 @@ print(logit_res.summary())
 # =======================================================================================
 # Estimate hessian and jacobian matrices from statsmodels and Laura's functions
 # -------------------------------------------------------------------------------
-t = smp.Probit.cov_params_func_l1()
 # get statsmodels hessian and jacobian matrices
 smprobit_hessian = probit_mod.hessian(params_sr)
 smprobit_jacobian = probit_mod.score_obs(params_sr)
