@@ -46,7 +46,6 @@ nobs = len(x)
 # estimate a probit and logit model in statsmodels
 # ------------------------------------------------
 
-y, x, params_sr = binary_processing(formula, spector_data)
 probit_mod = sm.Probit(endog=y, exog=x)
 logit_mod = sm.Logit(endog=y, exog=x)
 
@@ -60,11 +59,11 @@ print(logit_res.summary())
 # Estimate hessian and jacobian matrices from statsmodels and Laura's functions
 # -------------------------------------------------------------------------------
 # get statsmodels hessian and jacobian matrices
-smprobit_hessian = probit_mod.hessian(params_sr)
-smprobit_jacobian = probit_mod.score_obs(params_sr)
+smprobit_hessian = probit_mod.hessian(params)
+smprobit_jacobian = probit_mod.score_obs(params)
 
-smlogit_hessian = logit_mod.hessian(params_sr)
-smlogit_jacobian = logit_mod.score_obs(params_sr)
+smlogit_hessian = logit_mod.hessian(params)
+smlogit_jacobian = logit_mod.score_obs(params)
 
 # get Lauras hessian and jacobian matrices
 probit_hessian = probit_hessian(params, y, x)
