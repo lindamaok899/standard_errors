@@ -5,7 +5,7 @@ import patsy
 from standard_errors import cov_hessian, cov_jacobian, cov_sandwich
 from statsmodels.base.model import GenericLikelihoodModel
 
-#=======================================================================================
+# =======================================================================================
 # Loading data and neccesary functions to get input data
 # ------------------------------------------------------
 def binary_processing(formula, data):
@@ -34,51 +34,49 @@ def binary_processing(formula, data):
 
 
 # inputs
-    
+
 spector_data = sm.datasets.spector.load_pandas().data
 formula = "GRADE ~ GPA + TUCE + PSI"
 y, x, params = binary_processing(formula, spector_data)
 nobs = len(x)
-#=======================================================================================
-#specify model classes to get hessian & jacobian cov matrices
-#------------------------------------------------------------
+# =======================================================================================
+# specify model classes to get hessian & jacobian cov matrices
+# ------------------------------------------------------------
 # Probit class
 class OurProbit(GenericLikelihoodModel):
-        
     def nloglikeobs(self, *args, **kwargs):
         their_probit = sm.Probit(self.endog, self.exog)
-        return - their_probit.loglikeobs(*args, **kwargs)
+        return -their_probit.loglikeobs(*args, **kwargs)
 
-    
     def score_obs(self, *args, **kwargs):
         their_probit = sm.Probit(self.endog, self.exog)
-        print('score was called.')
+        print("score was called.")
         return their_probit.score_obs(*args, *kwargs)
-    
+
     def hessian(self, *args, **kwargs):
         their_probit = sm.Probit(self.endog, self.exog)
-        print('hessian was called')
+        print("hessian was called")
         return their_probit.hessian(*args, **kwargs)
-    
+
+
 # Logit class
 class OurLogit(GenericLikelihoodModel):
-        
     def nloglikeobs(self, *args, **kwargs):
         their_logit = sm.Logit(self.endog, self.exog)
-        return - their_logit.loglikeobs(*args, **kwargs)
+        return -their_logit.loglikeobs(*args, **kwargs)
 
-    
     def score_obs(self, *args, **kwargs):
         their_logit = sm.Logit(self.endog, self.exog)
-        print('score was called.')
+        print("score was called.")
         return their_logit.score_obs(*args, *kwargs)
-    
+
     def hessian(self, *args, **kwargs):
         their_logit = sm.Logit(self.endog, self.exog)
-        print('hessian was called')
+        print("hessian was called")
         return their_logit.hessian(*args, **kwargs)
 
-#=======================================================================================
+
+# =======================================================================================
 # estimate a probit model in statsmodels and compare cov_matrix results
 # ---------------------------------------------------------------------
 probit_mod = OurProbit(y, x)
@@ -89,11 +87,11 @@ jacobian_matrix = probit_mod.score_obs(probit_res.params)
 
 # statsmodels covariance matrices
 cov_jacobian_probit = probit_res.covjac
-cov_hessian_probit = - np.linalg.inv(probit_res.hessv)
+cov_hessian_probit = -np.linalg.inv(probit_res.hessv)
 cov_sandwich_probit = probit_res.covjhj
 
-#my covariance matrices
-mycov_jacobian_probit = cov_jacobian(jacobian_matrix, nobs) 
+# my covariance matrices
+mycov_jacobian_probit = cov_jacobian(jacobian_matrix, nobs)
 mycov_hessian_proibt = cov_hessian(hessian_matrix, nobs)
 cov_sandwich_probit = cov_sandwich(jacobian_matrix, hessian_matrix, nobs)
 
@@ -109,13 +107,12 @@ jacobian_matrix = logit_mod.score_obs(logit_res.params)
 
 # statsmodels covariance matrices
 cov_jacobian_logit = logit_res.covjac
-cov_hessian_logit = - np.linalg.inv(logit_res.hessv)
+cov_hessian_logit = -np.linalg.inv(logit_res.hessv)
 cov_sandwich_logit = logit_res.covjhj
 
-#my covariance matrices
-mycov_jacobian_logit = cov_jacobian(jacobian_matrix, nobs) 
+# my covariance matrices
+mycov_jacobian_logit = cov_jacobian(jacobian_matrix, nobs)
 mycov_hessian_logit = cov_hessian(hessian_matrix, nobs)
 mycov_sandwich_logit = cov_sandwich(jacobian_matrix, hessian_matrix, nobs)
 
-#=======================================================================================
-
+# =======================================================================================
