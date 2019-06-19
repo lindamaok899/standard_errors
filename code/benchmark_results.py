@@ -94,7 +94,9 @@ cov_sandwich_probit = probit_res.covjhj
 # my covariance matrices
 mycov_jacobian_probit = cov_jacobian(probit_jacobian_matrix, nobs)
 mycov_hessian_probit = cov_hessian(probit_hessian_matrix, nobs)
-mycov_sandwich_probit = cov_sandwich(probit_jacobian_matrix, probit_hessian_matrix, nobs)
+mycov_sandwich_probit = cov_sandwich(
+    probit_jacobian_matrix, probit_hessian_matrix, nobs
+)
 
 
 # estimate logit model in statsmodels and compare cov_matrix results
@@ -122,37 +124,36 @@ mycov_sandwich_logit = cov_sandwich(logit_jacobian_matrix, logit_hessian_matrix,
 
 # hessian and jacobian matrices for probit and logit
 
-with open('test_fixtures/probit_hessian_matrix.pickle', 'wb') as f:
+with open("test_fixtures/probit_hessian_matrix.pickle", "wb") as f:
     pickle.dump(probit_hessian_matrix, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('test_fixtures/probit_jacobian_matrix.pickle', 'wb') as f:
+
+with open("test_fixtures/probit_jacobian_matrix.pickle", "wb") as f:
     pickle.dump(probit_jacobian_matrix, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('test_fixtures/logit_hessian_matrix.pickle', 'wb') as f:
+
+with open("test_fixtures/logit_hessian_matrix.pickle", "wb") as f:
     pickle.dump(logit_hessian_matrix, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('test_fixtures/logit_jacobian_matrix.pickle', 'wb') as f:
+
+with open("test_fixtures/logit_jacobian_matrix.pickle", "wb") as f:
     pickle.dump(logit_jacobian_matrix, f, pickle.HIGHEST_PROTOCOL)
 
 
 # logit and probit covariance matrice output
-with open('test_fixtures/probit_jacobian.pickle', 'wb') as f:
+with open("test_fixtures/probit_jacobian.pickle", "wb") as f:
     pickle.dump(mycov_jacobian_probit, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('test_fixtures/probit_hessian.pickle', 'wb') as f:
+
+with open("test_fixtures/probit_hessian.pickle", "wb") as f:
     pickle.dump(mycov_hessian_probit, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('test_fixtures/probit_sandwich.pickle', 'wb') as f:
+
+with open("test_fixtures/probit_sandwich.pickle", "wb") as f:
     pickle.dump(mycov_sandwich_probit, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('test_fixtures/logit_jacobian.pickle', 'wb') as f:
+
+with open("test_fixtures/logit_jacobian.pickle", "wb") as f:
     pickle.dump(mycov_jacobian_logit, f, pickle.HIGHEST_PROTOCOL)
 
-with open('test_fixtures/logit_hessian.pickle', 'wb') as f:
+with open("test_fixtures/logit_hessian.pickle", "wb") as f:
     pickle.dump(mycov_hessian_logit, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('test_fixtures/logit_sandwich.pickle', 'wb') as f:
+
+with open("test_fixtures/logit_sandwich.pickle", "wb") as f:
     pickle.dump(mycov_sandwich_logit, f, pickle.HIGHEST_PROTOCOL)
 
 # ======================================================================================
-
