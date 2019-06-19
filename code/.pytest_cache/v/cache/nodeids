@@ -1,0 +1,8 @@
+[
+  "test_standard_errors.py::test_cov_hessian_with_probit",
+  "test_standard_errors.py::test_cov_hessian_with_logit",
+  "test_standard_errors.py::test_cov_jacobian_with_probit",
+  "test_standard_errors.py::test_cov_jacobian_with_logit",
+  "test_standard_errors.py::test_cov_sandwich_with_probit",
+  "test_standard_errors.py::test_cov_sandwich_with_logit"
+]

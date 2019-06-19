@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
+import pickle
 import statsmodels.api as sm
 import patsy
 from standard_errors import cov_hessian, cov_jacobian, cov_sandwich
 from statsmodels.base.model import GenericLikelihoodModel
 
-# =======================================================================================
+# ======================================================================================
 # Loading data and neccesary functions to get input data
 # ------------------------------------------------------
 def binary_processing(formula, data):
@@ -39,7 +40,7 @@ spector_data = sm.datasets.spector.load_pandas().data
 formula = "GRADE ~ GPA + TUCE + PSI"
 y, x, params = binary_processing(formula, spector_data)
 nobs = len(x)
-# =======================================================================================
+# ======================================================================================
 # specify model classes to get hessian & jacobian cov matrices
 # ------------------------------------------------------------
 # Probit class
@@ -76,14 +77,14 @@ class OurLogit(GenericLikelihoodModel):
         return their_logit.hessian(*args, **kwargs)
 
 
-# =======================================================================================
+# ======================================================================================
 # estimate a probit model in statsmodels and compare cov_matrix results
 # ---------------------------------------------------------------------
 probit_mod = OurProbit(y, x)
 probit_res = probit_mod.fit(start_params=params.to_numpy())
 
-hessian_matrix = probit_res.hessv
-jacobian_matrix = probit_mod.score_obs(probit_res.params)
+probit_hessian_matrix = probit_res.hessv
+probit_jacobian_matrix = probit_mod.score_obs(probit_res.params)
 
 # statsmodels covariance matrices
 cov_jacobian_probit = probit_res.covjac
@@ -91,9 +92,9 @@ cov_hessian_probit = -np.linalg.inv(probit_res.hessv)
 cov_sandwich_probit = probit_res.covjhj
 
 # my covariance matrices
-mycov_jacobian_probit = cov_jacobian(jacobian_matrix, nobs)
-mycov_hessian_proibt = cov_hessian(hessian_matrix, nobs)
-cov_sandwich_probit = cov_sandwich(jacobian_matrix, hessian_matrix, nobs)
+mycov_jacobian_probit = cov_jacobian(probit_jacobian_matrix, nobs)
+mycov_hessian_probit = cov_hessian(probit_hessian_matrix, nobs)
+mycov_sandwich_probit = cov_sandwich(probit_jacobian_matrix, probit_hessian_matrix, nobs)
 
 
 # estimate logit model in statsmodels and compare cov_matrix results
@@ -102,8 +103,8 @@ cov_sandwich_probit = cov_sandwich(jacobian_matrix, hessian_matrix, nobs)
 logit_mod = OurLogit(y, x)
 logit_res = logit_mod.fit(start_params=params.to_numpy())
 
-hessian_matrix = logit_res.hessv
-jacobian_matrix = logit_mod.score_obs(logit_res.params)
+logit_hessian_matrix = logit_res.hessv
+logit_jacobian_matrix = logit_mod.score_obs(logit_res.params)
 
 # statsmodels covariance matrices
 cov_jacobian_logit = logit_res.covjac
@@ -111,8 +112,47 @@ cov_hessian_logit = -np.linalg.inv(logit_res.hessv)
 cov_sandwich_logit = logit_res.covjhj
 
 # my covariance matrices
-mycov_jacobian_logit = cov_jacobian(jacobian_matrix, nobs)
-mycov_hessian_logit = cov_hessian(hessian_matrix, nobs)
-mycov_sandwich_logit = cov_sandwich(jacobian_matrix, hessian_matrix, nobs)
+mycov_jacobian_logit = cov_jacobian(logit_jacobian_matrix, nobs)
+mycov_hessian_logit = cov_hessian(logit_hessian_matrix, nobs)
+mycov_sandwich_logit = cov_sandwich(logit_jacobian_matrix, logit_hessian_matrix, nobs)
 
-# =======================================================================================
+# ======================================================================================
+# save data as pickle files
+# ----------------------------
+
+# hessian and jacobian matrices for probit and logit
+
+with open('test_fixtures/probit_hessian_matrix.pickle', 'wb') as f:
+    pickle.dump(probit_hessian_matrix, f, pickle.HIGHEST_PROTOCOL)
+    
+with open('test_fixtures/probit_jacobian_matrix.pickle', 'wb') as f:
+    pickle.dump(probit_jacobian_matrix, f, pickle.HIGHEST_PROTOCOL)
+    
+with open('test_fixtures/logit_hessian_matrix.pickle', 'wb') as f:
+    pickle.dump(logit_hessian_matrix, f, pickle.HIGHEST_PROTOCOL)
+    
+with open('test_fixtures/logit_jacobian_matrix.pickle', 'wb') as f:
+    pickle.dump(logit_jacobian_matrix, f, pickle.HIGHEST_PROTOCOL)
+
+
+# logit and probit covariance matrice output
+with open('test_fixtures/probit_jacobian.pickle', 'wb') as f:
+    pickle.dump(mycov_jacobian_probit, f, pickle.HIGHEST_PROTOCOL)
+    
+with open('test_fixtures/probit_hessian.pickle', 'wb') as f:
+    pickle.dump(mycov_hessian_probit, f, pickle.HIGHEST_PROTOCOL)
+    
+with open('test_fixtures/probit_sandwich.pickle', 'wb') as f:
+    pickle.dump(mycov_sandwich_probit, f, pickle.HIGHEST_PROTOCOL)
+    
+with open('test_fixtures/logit_jacobian.pickle', 'wb') as f:
+    pickle.dump(mycov_jacobian_logit, f, pickle.HIGHEST_PROTOCOL)
+
+with open('test_fixtures/logit_hessian.pickle', 'wb') as f:
+    pickle.dump(mycov_hessian_logit, f, pickle.HIGHEST_PROTOCOL)
+    
+with open('test_fixtures/logit_sandwich.pickle', 'wb') as f:
+    pickle.dump(mycov_sandwich_logit, f, pickle.HIGHEST_PROTOCOL)
+
+# ======================================================================================
+

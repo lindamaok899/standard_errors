@@ -18,7 +18,7 @@ import numpy as np
 # =======================================================================================
 
 
-def cov_hessian(hessian, nobs):
+def cov_hessian(hessian):
 
     """Covariance based on the negative inverse of the hessian of loglike.
     
@@ -39,14 +39,14 @@ def cov_hessian(hessian, nobs):
     Resources: Marno Verbeek - A guide to modern econometrics.
     
     """
-    # info_matrix = -1 * ((hessian)/nobs)
+
     info_matrix = -1 * (hessian)
     cov_hes = np.linalg.inv(info_matrix)
 
     return cov_hes
 
 
-def cov_jacobian(jacobian, nobs):
+def cov_jacobian(jacobian):
 
     """Covariance based on outer product of jacobian of loglikeobs.
     
@@ -68,14 +68,13 @@ def cov_jacobian(jacobian, nobs):
     
     """
 
-    # info_matrix = np.dot((jacobian.T), jacobian)/nobs
     info_matrix = np.dot((jacobian.T), jacobian)
     cov_jac = np.linalg.inv(info_matrix)
 
     return cov_jac
 
 
-def cov_sandwich(jacobian, hessian, nobs):
+def cov_sandwich(jacobian, hessian):
 
     """Covariance of parameters based on HJJH dot product of Hessian, Jacobian, Jacobian, Hessian of likelihood.
     
@@ -91,9 +90,8 @@ def cov_sandwich(jacobian, hessian, nobs):
     
     """
 
-    # info_matrix = np.dot((jacobian.T), jacobian)/nobs
     info_matrix = np.dot((jacobian.T), jacobian)
-    cov_hes = cov_hessian(hessian, nobs)
+    cov_hes = cov_hessian(hessian)
     sandwich_cov = np.dot(cov_hes, np.dot(info_matrix, cov_hes))
 
     return sandwich_cov
