@@ -1,100 +1,63 @@
 import pytest
 import pickle
 from numpy.testing import assert_array_almost_equal as aaae
-from standard_errors import cov_hessian, cov_jacobian, cov_sandwich
+import standard_errors as se
+from itertools import product
 
 
-@pytest.fixture
-def setup_covariance_matrices():
+def get_expected_covariance(model, cov_method):
+    """Load expected covariance matrix.
 
-    output_dict = {}
-    with open("test_fixtures/probit_hessian_matrix.pickle", "rb") as f:
-        output_dict["probit_hessian_matrix"] = pickle.load(f)
+    Args:
+        model (str): one of ['logit', 'probit']
+        cov_method (str): one of ['jacobian', 'hessian', 'sandwich']
 
-    with open("test_fixtures/probit_jacobian_matrix.pickle", "rb") as f:
-        output_dict["probit_jacobian_matrix"] = pickle.load(f)
+    Returns:
+        expected_covariance
 
-    with open("test_fixtures/logit_hessian_matrix.pickle", "rb") as f:
-        output_dict["logit_hessian_matrix"] = pickle.load(f)
-
-    with open("test_fixtures/logit_jacobian_matrix.pickle", "rb") as f:
-        output_dict["logit_jacobian_matrix"] = pickle.load(f)
-
-    return output_dict
+    """
+    with open('test_fixtures/{}_{}.pickle'.format(model, cov_method), 'rb') as f:
+        expected_cov = pickle.load(f)
+    return expected_cov
 
 
-@pytest.fixture
-def expected_covariance_matrices():
+def get_input(model, input_types):
+    """Load the inputs.
 
-    output_dict = {}
-    with open("test_fixtures/probit_jacobian.pickle", "rb") as f:
-        output_dict["probit_jacobian_cov"] = pickle.load(f)
+    Args:
+        model (str): one of ['logit', 'probit']
+        input_types (list): can contain the elements 'jacobian' and 'hessian'
 
-    with open("test_fixtures/probit_hessian.pickle", "rb") as f:
-        output_dict["probit_hessian_cov"] = pickle.load(f)
+    Returns:
+        inputs (dict): The inputs for the covariance function
 
-    with open("test_fixtures/probit_sandwich.pickle", "rb") as f:
-        output_dict["probit_sandwich_cov"] = pickle.load(f)
-
-    with open("test_fixtures/logit_jacobian.pickle", "rb") as f:
-        output_dict["logit_jacobian_cov"] = pickle.load(f)
-
-    with open("test_fixtures/logit_hessian.pickle", "rb") as f:
-        output_dict["logit_hessian_cov"] = pickle.load(f)
-
-    with open("test_fixtures/logit_sandwich.pickle", "rb") as f:
-        output_dict["logit_sandwich_cov"] = pickle.load(f)
-
-    return output_dict
+    """
+    inputs = {}
+    for typ in input_types:
+        with open('test_fixtures/{}_{}_matrix.pickle'.format(model, typ), 'rb') as f:
+            input_matrix = pickle.load(f)
+        inputs[typ] = input_matrix
+    return inputs
 
 
-def test_cov_hessian_with_probit(
-    setup_covariance_matrices, expected_covariance_matrices
-):
-    inputs, outputs = setup_covariance_matrices, expected_covariance_matrices
-    covariance_matrix = cov_hessian(inputs["probit_hessian_matrix"])
-    aaae(covariance_matrix, outputs["probit_hessian_cov"])
+models = ['probit', 'logit']
+methods = ['jacobian', 'hessian', 'sandwich']
+test_cases = list(product(models, methods))
 
 
-def test_cov_hessian_with_logit(
-    setup_covariance_matrices, expected_covariance_matrices
-):
-    inputs, outputs = setup_covariance_matrices, expected_covariance_matrices
-    covariance_matrix = cov_hessian(inputs["logit_hessian_matrix"])
-    aaae(covariance_matrix, outputs["logit_hessian_cov"])
+@pytest.mark.parametrize('model, method', test_cases)
+def test_cov_function(model, method):
+    expected = get_expected_covariance(model, method)
+
+    if method in ['jacobian', 'hessian']:
+        input_types = [method]
+    elif method == 'sandwich':
+        input_types = ['jacobian', 'hessian']
+
+    inputs = get_input(model, input_types)
+
+    calculated = getattr(se, 'cov_{}'.format(method))(**inputs)
+
+    aaae(calculated, expected)
 
 
-def test_cov_jacobian_with_probit(
-    setup_covariance_matrices, expected_covariance_matrices
-):
-    inputs, outputs = setup_covariance_matrices, expected_covariance_matrices
-    covariance_matrix = cov_jacobian(inputs["probit_jacobian_matrix"])
-    aaae(covariance_matrix, outputs["probit_jacobian_cov"])
-
-
-def test_cov_jacobian_with_logit(
-    setup_covariance_matrices, expected_covariance_matrices
-):
-    inputs, outputs = setup_covariance_matrices, expected_covariance_matrices
-    covariance_matrix = cov_jacobian(inputs["logit_jacobian_matrix"])
-    aaae(covariance_matrix, outputs["logit_jacobian_cov"])
-
-
-def test_cov_sandwich_with_probit(
-    setup_covariance_matrices, expected_covariance_matrices
-):
-    inputs, outputs = setup_covariance_matrices, expected_covariance_matrices
-    covariance_matrix = cov_sandwich(
-        inputs["probit_jacobian_matrix"], inputs["probit_hessian_matrix"]
-    )
-    aaae(covariance_matrix, outputs["probit_sandwich_cov"])
-
-
-def test_cov_sandwich_with_logit(
-    setup_covariance_matrices, expected_covariance_matrices
-):
-    inputs, outputs = setup_covariance_matrices, expected_covariance_matrices
-    covariance_matrix = cov_sandwich(
-        inputs["logit_jacobian_matrix"], inputs["logit_hessian_matrix"]
-    )
-    aaae(covariance_matrix, outputs["logit_sandwich_cov"])
